@@ -1,2 +1,2 @@
 # short-how-to
-I have the answer
+Core solutions for problematic parts
