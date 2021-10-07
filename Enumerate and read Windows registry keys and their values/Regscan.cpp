@@ -1,21 +1,25 @@
-/* 
-Original non-working code posted by 8bitcartridge 
+/*
+Original non-working code posted by 8bitcartridge
 here > https://stackoverflow.com/questions/6825555/enumerating-all-subkeys-and-values-in-a-windows-registry-key
 Code fixed by Vladivarius
 elamon.vlad@gmail.com
 27.12.2020.
 */
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <Windows.h> //not sure if this is the only required thing to include
+#include <stdio.h>
+#include <iostream>
 
 using namespace std;
 LSTATUS result;
-BYTE databuffer[1024];
+BYTE databuffer[256];
 
 void EnumerateValues(HKEY hKey, DWORD numValues)
 {
 	cout << "\nKeys found: " << numValues;
 	DWORD dwIndex = 0;
-	LPSTR valueName = new CHAR[64];
+	LPSTR valueName = new CHAR[256];
 	DWORD valNameLen;
 	DWORD dataType;
 	BYTE* data = databuffer;
@@ -23,15 +27,18 @@ void EnumerateValues(HKEY hKey, DWORD numValues)
 
 	for (int i = 0; i < numValues; i++)
 	{
-		result = 
-		RegEnumValue(hKey,
-			dwIndex,
-			valueName,
-			&valNameLen,
-			NULL,
-			&dataType,
-			data,
-			&dataSize);
+		DWORD valNameLen=256;
+		dataSize = 256;
+		dataType=0;
+		result =
+			RegEnumValue(hKey,
+				dwIndex,
+				valueName,
+				&valNameLen,
+				NULL,
+				&dataType,
+				data,
+				&dataSize);
 
 		if (result != ERROR_SUCCESS) {
 			cout << "\nError RegEnumValue > " << result;
@@ -42,7 +49,7 @@ void EnumerateValues(HKEY hKey, DWORD numValues)
 	}
 }
 
-void EnumerateSubKeys(HKEY RootKey, char* subKey, unsigned int tabs = 0)
+void EnumerateSubKeys(HKEY RootKey, const char* subKey, unsigned int tabs = 0)
 {
 	HKEY hKey;
 	DWORD cSubKeys;        //Used to store the number of Subkeys
@@ -52,25 +59,25 @@ void EnumerateSubKeys(HKEY RootKey, char* subKey, unsigned int tabs = 0)
 	DWORD retCode;        //Return values of calls
 
 	result =
-	RegOpenKeyEx(RootKey, subKey, 0, KEY_QUERY_VALUE | KEY_ENUMERATE_SUB_KEYS | KEY_READ /*KEY_ALL_ACCESS*/, &hKey);
+		RegOpenKeyEx(RootKey, subKey, 0, KEY_QUERY_VALUE | KEY_ENUMERATE_SUB_KEYS | KEY_READ /*KEY_ALL_ACCESS*/, &hKey);
 	if (result != ERROR_SUCCESS) {
 		cout << "\nError RegOpenKeyEx > " << result;
 		return;
 	}
 
-	result = 
-	RegQueryInfoKey(hKey,          // key handle
-		NULL,            // buffer for class name
-		NULL,            // size of class string
-		NULL,            // reserved
-		&cSubKeys,        // number of subkeys
-		&maxSubkeyLen,    // longest subkey length
-		NULL,            // longest class string 
-		&cValues,        // number of values for this key 
-		&maxValueLen,    // longest value name 
-		NULL,            // longest value data 
-		NULL,            // security descriptor 
-		NULL);            // last write time
+	result =
+		RegQueryInfoKey(hKey,          // key handle
+			NULL,            // buffer for class name
+			NULL,            // size of class string
+			NULL,            // reserved
+			&cSubKeys,        // number of subkeys
+			&maxSubkeyLen,    // longest subkey length
+			NULL,            // longest class string 
+			&cValues,        // number of values for this key 
+			&maxValueLen,    // longest value name 
+			NULL,            // longest value data 
+			NULL,            // security descriptor 
+			NULL);            // last write time
 
 	if (result != ERROR_SUCCESS) {
 		cout << "\nError RegQueryInfoKey > " << result;
@@ -113,7 +120,8 @@ void EnumerateSubKeys(HKEY RootKey, char* subKey, unsigned int tabs = 0)
 	RegCloseKey(hKey);
 }
 
-int main(){
-  //Check if a device is plugged in, for example Arduino Uno.
-  EnumerateSubKeys(HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\SERIALCOMM");
+int main() {
+	//Check if a device is plugged in, for example Arduino Uno.
+	EnumerateSubKeys(HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\SERIALCOMM");
+	getchar();
 }
